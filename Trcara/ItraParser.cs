@@ -8,6 +8,7 @@ namespace Trcara
 {
     internal  static class ItraParser
     {
+        private const string BaseUrl = "https://itra.run";
         private static Dictionary<string, string> CountryCodes = new Dictionary<string, string>()
         {
             ["TUR"] = "Turkey",
@@ -26,8 +27,21 @@ namespace Trcara
                 Date = GetDate(e.Date),
                 Location = GetLocation(e.Location),
                 Country = GetCountry(e.Location),
-                Type = RaceType.Trail
+                Type = RaceType.Trail,
+                Link = $"{BaseUrl}{e.Link}",
+                Distance = GetDistance(e.Races),
+                Elevation = GetElevation(e.Races)
             }).ToList();
+        }
+
+        private static string GetElevation(List<RaceInfo> races)
+        {
+            return string.Join(", ", races.Select(r => r.Elevation.Replace("+", "").Replace("m", "").Trim()));
+        }
+
+        private static string GetDistance(List<RaceInfo> races)
+        {
+            return string.Join(", ", races.Select(r => r.Distance.Replace("k", "").Trim()));
         }
 
         private static string GetCountry(string location)
@@ -95,7 +109,7 @@ namespace Trcara
             using var client = new HttpClient(handler);
 
             // STEP 1 — GET PAGE (to obtain session + antiforgery cookies)
-            var getUrl = "https://itra.run/Races/RaceCalendar";
+            var getUrl = $"{BaseUrl}/Races/RaceCalendar";
 
             var getHtml = await client.GetStringAsync(getUrl);
 

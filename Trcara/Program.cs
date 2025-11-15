@@ -4,12 +4,11 @@ using Trcara;
 string csvPath = @"c:\d\z\events.csv";
 var knownRuns = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "KnownRuns.txt"));
 
-var events = await ItraParser.GetAsync(knownRuns);
+var itraEvents = await ItraParser.GetAsync(knownRuns);
+var trkaEvents = await TrkaParser.Get(knownRuns);
+var runtraceEvents = await RunTraceParser.Get(knownRuns);
 
-//var trkaEvents = await TrkaParser.Get(knownRuns);
-//var runtraceEvents = await RunTraceParser.Get(knownRuns);
-
-//var events = trkaEvents.Union(runtraceEvents).ToList();
+var events = trkaEvents.Union(runtraceEvents).Union(itraEvents).ToList();
 
 using (var writer = new StreamWriter(csvPath))
 {
@@ -20,7 +19,7 @@ using (var writer = new StreamWriter(csvPath))
         var date = e.Date.TrimEnd('.');
         var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
-        writer.WriteLine($"\"{eventType}\",\"{e.Title}\",,,\"{date}\",\"{e.Deadline}\",\"{linkCleared}\",\"{e.Facebook}\",\"{e.Instagram}\",\"{e.Contact}\",\"{e.Country}\",\"{e.Location}\"");
+        writer.WriteLine($"\"{eventType}\",\"{e.Title}\",\"{e.Distance}\",\"{e.Elevation}\",\"{date}\",\"{e.Deadline}\",\"{linkCleared}\",\"{e.Facebook}\",\"{e.Instagram}\",\"{e.Contact}\",\"{e.Country}\",\"{e.Location}\"");
     }
 }
 
