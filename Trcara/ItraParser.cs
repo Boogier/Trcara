@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Trcara
 {
-    internal  static class ItraParser
+    internal class ItraParser : IParser
     {
         private const string BaseUrl = "https://itra.run";
         private static Dictionary<string, string> CountryCodes = new Dictionary<string, string>()
@@ -15,8 +15,10 @@ namespace Trcara
             ["MKD"] = "NMK"
         };
 
-        internal static async Task<List<EventDetails>> GetAsync(string[] knownRuns)
+        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRuns)
         {
+            Console.WriteLine($"Parsing {BaseUrl}");
+            
             var responseText = await GetDataAsync();
 
             var events = ParseHtml(responseText, knownRuns);

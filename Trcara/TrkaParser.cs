@@ -2,11 +2,13 @@
 
 namespace Trcara
 {
-    internal static class TrkaParser
+    internal class TrkaParser : IParser
     {
-        public static async Task<List<EventDetails>> Get(string[] knownRuns)
+        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRuns)
         {
             string baseUrl = "https://www.trka.rs";
+
+            Console.WriteLine($"Parsing {baseUrl}");
 
             var httpClient = new HttpClient();
             var html = await httpClient.GetStringAsync(baseUrl);
@@ -55,7 +57,7 @@ namespace Trcara
                    ? details.MoreDetailsLink
                    : trkaLink;
 
-                events.Add(new EventDetails(RaceType.Trail, title, "", "", date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", ""));
+                events.Add(new EventDetails("", title, "", "", date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", ""));
             }
 
             return events;

@@ -3,11 +3,13 @@ using System.Globalization;
 
 namespace Trcara
 {
-    internal class RunTraceParser
+    internal class RunTraceParser : IParser
     {
-        public static async Task<List<EventDetails>> Get(string[] knownRuns)
+        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRuns)
         {
             string baseUrl = "https://runtrace.net";
+
+            Console.WriteLine($"Parsing {baseUrl}");
 
             var httpClient = new HttpClient();
             //var html = await httpClient.GetStringAsync(url);

@@ -4,11 +4,12 @@ using Trcara;
 string csvPath = @"c:\d\z\events.csv";
 var knownRuns = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "KnownRuns.txt"));
 
-var itraEvents = await ItraParser.GetAsync(knownRuns);
-var trkaEvents = await TrkaParser.Get(knownRuns);
-var runtraceEvents = await RunTraceParser.Get(knownRuns);
-
-var events = trkaEvents.Union(runtraceEvents).Union(itraEvents).ToList();
+var events = new List<EventDetails>();
+var parsers = PasrerProvider.GetParsers();
+foreach (var parser in parsers)
+{
+    events.AddRange(await parser.GetEventsAsync(knownRuns));
+}
 
 using (var writer = new StreamWriter(csvPath))
 {
