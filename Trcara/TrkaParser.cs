@@ -55,7 +55,7 @@ namespace Trcara
                    ? details.MoreDetailsLink
                    : trkaLink;
 
-                events.Add(new EventDetails(title, date, link, facebook, instagram, details.Deadline, details.Contact, ""));
+                events.Add(new EventDetails(RaceType.Trail, title, date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", ""));
                 //if (!string.IsNullOrEmpty(title))
                 //{
                 //}

@@ -4,21 +4,23 @@ using Trcara;
 string csvPath = @"c:\d\z\events.csv";
 var knownRuns = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "KnownRuns.txt"));
 
-var trkaEvents = await TrkaParser.Get(knownRuns);
-var runtraceEvents = await RunTraceParser.Get(knownRuns);
+var events = await ItraParser.GetAsync(knownRuns);
 
-var events = trkaEvents.Union(runtraceEvents).ToList();
+//var trkaEvents = await TrkaParser.Get(knownRuns);
+//var runtraceEvents = await RunTraceParser.Get(knownRuns);
+
+//var events = trkaEvents.Union(runtraceEvents).ToList();
 
 using (var writer = new StreamWriter(csvPath))
 {
     //writer.WriteLine("Type,Title,Distance,ElevationGane,Date,Deadline,Link,Facebook,Instagram,eMail,Country");
     foreach (var e in events)
     {
-        var eventType = GetEventType(e.Title);
+        var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
         var date = e.Date.TrimEnd('.');
-        var linkCleared = Uri.EscapeUriString(e.Link);
+        var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
-        writer.WriteLine($"\"{eventType}\",\"{e.Title}\",,,\"{date}\",\"{e.Deadline}\",\"{linkCleared}\",\"{e.Facebook}\",\"{e.Instagram}\",\"{e.Contact}\",\"Serbia\",\"{e.Location}\"");
+        writer.WriteLine($"\"{eventType}\",\"{e.Title}\",,,\"{date}\",\"{e.Deadline}\",\"{linkCleared}\",\"{e.Facebook}\",\"{e.Instagram}\",\"{e.Contact}\",\"{e.Country}\",\"{e.Location}\"");
     }
 }
 
@@ -30,9 +32,10 @@ string GetEventType(string title)
         title.Has("trail")
         || title.Has("trejl")
         || title.Has("planinarski")
+        || title.Has("ultra")
         )
     {
-        return "Trail";
+        return RaceType.Trail;
     }
 
     if (
@@ -41,17 +44,15 @@ string GetEventType(string title)
         || title.Has("desetka")
         )
     {
-        return "шоссе";
+        return RaceType.Asphalt;
     }
 
     if (
         title.Has("ocr")
         )
     {
-        return "шоссе";
+        return RaceType.Ocr;
     }
 
-    return "Other";
+    return RaceType.Other;
 }
-
-internal readonly record struct EventDetails(string Title, string Date, string Link, string Facebook, string Instagram, string Deadline, string Contact, string Location);

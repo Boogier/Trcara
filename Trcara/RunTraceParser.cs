@@ -30,7 +30,7 @@ namespace Trcara
                     continue;
 
                 var title = infoNode.SelectSingleNode(".//a[contains(@class, 'race-title')]")?.InnerText?.Trim();
-                if (knownRuns.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
+                if (string.IsNullOrWhiteSpace(title) || knownRuns.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -47,6 +47,7 @@ namespace Trcara
                 {
                     Title = title,
                     Date = GetDate(date),
+                    Country = "Serbia",
                     Location = location,
                     Link = !string.IsNullOrWhiteSpace(slug) ? new Uri(new Uri(baseUrl), $"?event={slug}").ToString()
                     : !string.IsNullOrWhiteSpace(signup) ? new Uri(new Uri(baseUrl), signup).ToString()
