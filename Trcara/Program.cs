@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Trcara;
 
-string csvPath = @"c:\d\z\events.csv";
 var knownRuns = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "KnownRuns.txt"));
 
 var events = new List<EventDetails>();
@@ -11,20 +10,40 @@ foreach (var parser in parsers)
     events.AddRange(await parser.GetEventsAsync(knownRuns));
 }
 
-using (var writer = new StreamWriter(csvPath))
+if (events.Count > 0)
 {
-    //writer.WriteLine("Type,Title,Distance,ElevationGane,Date,Deadline,Link,Facebook,Instagram,eMail,Country");
-    foreach (var e in events)
-    {
-        var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
-        var date = e.Date.TrimEnd('.');
-        var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
-        writer.WriteLine($"\"{eventType}\",\"{e.Title}\",\"{e.Distance}\",\"{e.Elevation}\",\"{date}\",\"{e.Deadline}\",\"{linkCleared}\",\"{e.Facebook}\",\"{e.Instagram}\",\"{e.Contact}\",\"{e.Country}\",\"{e.Location}\"");
+    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "trcara.txt");
+    using (var writer = new StreamWriter(filePath))
+    {
+        //writer.WriteLine("Type,Title,Distance,ElevationGane,Date,Deadline,Link,Facebook,Instagram,eMail,Country");
+        foreach (var e in events)
+        {
+            var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
+            var date = e.Date.TrimEnd('.');
+            var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
+
+            writer.WriteLine($"\"{eventType}\"\t\"{e.Title}\"\t\"{e.Distance}\"\t\"{e.Elevation}\"\t\"{date}\"\t\"{e.Deadline}\"\t\"{linkCleared}\"\t\"{e.Facebook}\"\t\"{e.Instagram}\"\t\"{e.Contact}\"\t\"{e.Country}\"\t\"{e.Location}\"");
+        }
     }
+
+    Console.WriteLine(@$"
+Extracted {events.Count} events to file {filePath}.
+
+Now you can open it with notepad and copy/paste the events to Trcara spreadsheet.
+Then select 'Дата' column and format it as Date. 
+Then you can sort by 'Дата' column.");
+}
+else
+{
+    Console.WriteLine(@"
+No new events found.");
 }
 
-Console.WriteLine($"Extracted {events.Count} events → {csvPath}");
+Console.WriteLine(@"
+Press any key to exit.");
+
+Console.ReadKey();
 
 string GetEventType(string title)
 {
