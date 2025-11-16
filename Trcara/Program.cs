@@ -1,18 +1,25 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
 using Trcara;
 
-var knownRuns = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "KnownRuns.txt"));
+var fillterDateFrom = new DateTime(2026, 1, 1);
+
+var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
 
 var events = new List<EventDetails>();
 var parsers = PasrerProvider.GetParsers();
 foreach (var parser in parsers)
 {
-    events.AddRange(await parser.GetEventsAsync(knownRuns));
+    var parsedEvents = await parser.GetEventsAsync(knownRaces);
+    var filteredEvents = parsedEvents
+        .Where(e =>
+        !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
+        || date >= fillterDateFrom);
+
+    events.AddRange(filteredEvents);
 }
 
 if (events.Count > 0)
 {
-
     string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "trcara.txt");
     using (var writer = new StreamWriter(filePath))
     {

@@ -4,7 +4,7 @@ namespace Trcara
 {
     internal class TrkaParser : IParser
     {
-        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRuns)
+        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
         {
             string baseUrl = "https://www.trka.rs";
 
@@ -32,7 +32,7 @@ namespace Trcara
                 var titleNode = card.SelectSingleNode(".//h5[@class='card-title']");
                 string title = titleNode?.InnerText?.Trim() ?? "";
 
-                if (knownRuns.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
+                if (knownRaces.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }

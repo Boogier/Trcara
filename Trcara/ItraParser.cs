@@ -15,13 +15,13 @@ namespace Trcara
             ["MKD"] = "NMK"
         };
 
-        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRuns)
+        public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
         {
             Console.WriteLine($"Parsing {BaseUrl}");
             
             var responseText = await GetDataAsync();
 
-            var events = ParseHtml(responseText, knownRuns);
+            var events = ParseHtml(responseText, knownRaces);
 
             return events.Select(e => new EventDetails
             {
