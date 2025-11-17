@@ -2,6 +2,7 @@
 using Trcara;
 
 var fillterDateFrom = new DateTime(2026, 1, 1);
+Console.WriteLine($@"Filtering races starting from {fillterDateFrom:dd.MM.yyyy}.");
 
 var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
 
@@ -9,13 +10,20 @@ var events = new List<EventDetails>();
 var parsers = PasrerProvider.GetParsers();
 foreach (var parser in parsers)
 {
-    var parsedEvents = await parser.GetEventsAsync(knownRaces);
-    var filteredEvents = parsedEvents
-        .Where(e =>
-        !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
-        || date >= fillterDateFrom);
+    try
+    {
+        var parsedEvents = await parser.GetEventsAsync(knownRaces);
+        var filteredEvents = parsedEvents
+            .Where(e =>
+            !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
+            || date >= fillterDateFrom);
 
-    events.AddRange(filteredEvents);
+        events.AddRange(filteredEvents);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Failed to get events from {parser.GetType().Name}: {ex.Message}.");
+    }
 }
 
 if (events.Count > 0)
