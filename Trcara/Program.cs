@@ -9,7 +9,7 @@ Console.WriteLine($"Filtering races starting from {Settings.FilterDateFrom:dd.MM
 var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
 
 var events = new List<EventDetails>();
-var parsers = PasrerProvider.GetParsers();
+var parsers = ParserProvider.GetParsers();
 foreach (var parser in parsers)
 {
     try
@@ -17,8 +17,8 @@ foreach (var parser in parsers)
         var parsedEvents = await parser.GetEventsAsync(knownRaces);
         var filteredEvents = parsedEvents
             .Where(e =>
-            !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
-            || date >= Settings.FilterDateFrom)
+                !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
+                || date >= Settings.FilterDateFrom)
             .ToList();
 
         events.AddRange(filteredEvents);
@@ -31,10 +31,10 @@ foreach (var parser in parsers)
 
 if (events.Count > 0)
 {
-    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "trcara.txt");
+    var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "trcara.txt");
     using (var writer = new StreamWriter(filePath))
     {
-        //writer.WriteLine("Type,Title,Distance,ElevationGane,Date,Deadline,Link,Facebook,Instagram,eMail,Country");
+        //writer.WriteLine("Type,Title,Distance,ElevationGain,Date,Deadline,Link,Facebook,Instagram,eMail,Country");
         foreach (var e in events)
         {
             var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
@@ -70,7 +70,7 @@ string GetEventType(string title)
         || title.Has("trejl")
         || title.Has("planinarski")
         || title.Has("ultra")
-        )
+    )
     {
         return RaceType.Trail;
     }
@@ -79,14 +79,14 @@ string GetEventType(string title)
         title.Has("marathon")
         || title.Has("maraton")
         || title.Has("desetka")
-        )
+    )
     {
         return RaceType.Asphalt;
     }
 
     if (
         title.Has("ocr")
-        )
+    )
     {
         return RaceType.Ocr;
     }

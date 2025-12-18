@@ -1,7 +1,6 @@
-﻿namespace Trcara
+﻿namespace Trcara;
+
+internal interface IParser
 {
-    internal interface IParser
-    {
-        Task<List<EventDetails>> GetEventsAsync(string[] knownRaces);
-    }
+    Task<List<EventDetails>> GetEventsAsync(string[] knownRaces);
 }

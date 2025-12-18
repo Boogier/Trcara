@@ -1,21 +1,22 @@
-﻿using HtmlAgilityPack;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace Trcara;
 
 internal class ItraParser : IParser
 {
     private const string BaseUrl = "https://itra.run";
+
     private static readonly Dictionary<string, string> CountryCodes = new()
     {
         ["TUR"] = "Turkey",
         ["MKD"] = "NMK",
         ["BIH"] = "Bosnia",
         ["GEO"] = "Georgia",
-        ["MNE"] = "Montenegro",
+        ["MNE"] = "Montenegro"
     };
 
     private static readonly string[] CountriesToSearch =
@@ -25,13 +26,13 @@ internal class ItraParser : IParser
         "ME",
         "GE",
         "MK",
-        "TR",
+        "TR"
     };
 
     public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
     {
         Console.WriteLine($"Parsing {BaseUrl}");
-            
+
         var responseText = await GetDataAsync();
 
         var events = ParseHtml(responseText, knownRaces);
@@ -86,19 +87,19 @@ internal class ItraParser : IParser
         if (!DateTime.TryParse(date, CultureInfo.GetCultureInfo("en-US"), out var parsed))
         {
             // Define regex to match the pattern: startDay - endDay month year
-            Regex regex = new Regex(@"(\d+)\s*-\s*(\d+)\s*(\w+)\s*(\d+)");
-            Match match = regex.Match(date);
+            var regex = new Regex(@"(\d+)\s*-\s*(\d+)\s*(\w+)\s*(\d+)");
+            var match = regex.Match(date);
 
             if (!match.Success)
             {
                 return $"??? {date}";
             }
 
-            string startDay = match.Groups[1].Value;
-            string month = match.Groups[3].Value;
-            string year = match.Groups[4].Value;
+            var startDay = match.Groups[1].Value;
+            var month = match.Groups[3].Value;
+            var year = match.Groups[4].Value;
 
-            string startDateStr = $"{startDay} {month} {year}";
+            var startDateStr = $"{startDay} {month} {year}";
             if (!DateTime.TryParse(startDateStr, CultureInfo.GetCultureInfo("en-US"), out parsed))
             {
                 return $"?????? {date} -> {startDateStr}";
@@ -147,7 +148,7 @@ internal class ItraParser : IParser
         //Console.WriteLine("POST " + postUrl);
         var response = await client.SendAsync(request);
 
-        string respText = await response.Content.ReadAsStringAsync();
+        var respText = await response.Content.ReadAsStringAsync();
         return respText;
     }
 
@@ -163,7 +164,7 @@ internal class ItraParser : IParser
         Console.WriteLine($"Found {matches.Count} events.");
         foreach (Match m in matches)
         {
-            string html = m.Groups[1].Value.Replace("\\\"", "\"");
+            var html = m.Groups[1].Value.Replace("\\\"", "\"");
             var e = ParseOneEvent(html);
             if (!knownRuns.Any(kr => string.Equals(kr, e.Name)))
             {
@@ -241,7 +242,7 @@ public class EventInfo
 
 public class RaceInfo
 {
-    public string Distance { get; set; }   // e.g. "18 k"
-    public string Elevation { get; set; }  // e.g. "+912 m"
+    public string Distance { get; set; } // e.g. "18 k"
+    public string Elevation { get; set; } // e.g. "+912 m"
     public string Link { get; set; }
 }
