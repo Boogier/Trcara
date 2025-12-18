@@ -4,8 +4,7 @@ using Trcara;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-var filterDateFrom = new DateTime(2026, 1, 1);
-Console.WriteLine($@"Filtering races starting from {filterDateFrom:dd.MM.yyyy}.");
+Console.WriteLine($"Filtering races starting from {Settings.FilterDateFrom:dd.MM.yyyy}.");
 
 var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
 
@@ -19,7 +18,8 @@ foreach (var parser in parsers)
         var filteredEvents = parsedEvents
             .Where(e =>
             !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
-            || date >= filterDateFrom);
+            || date >= Settings.FilterDateFrom)
+            .ToList();
 
         events.AddRange(filteredEvents);
     }

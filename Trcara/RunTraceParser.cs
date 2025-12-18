@@ -12,7 +12,6 @@ namespace Trcara
             Console.WriteLine($"Parsing {baseUrl}");
 
             var httpClient = new HttpClient();
-            //var html = await httpClient.GetStringAsync(url);
             var html = await httpClient.GetStringAsync(baseUrl);
 
             var doc = new HtmlDocument();
@@ -25,6 +24,8 @@ namespace Trcara
             if (raceNodes == null)
                 return races;
 
+            Console.WriteLine($"Found {raceNodes.Count} events.");
+            
             foreach (var race in raceNodes)
             {
                 var infoNode = race.SelectSingleNode(".//div[contains(@class, 'grid__race__info')]");

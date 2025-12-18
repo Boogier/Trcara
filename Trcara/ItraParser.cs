@@ -9,11 +9,23 @@ namespace Trcara;
 internal class ItraParser : IParser
 {
     private const string BaseUrl = "https://itra.run";
-    private static readonly Dictionary<string, string> CountryCodes = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> CountryCodes = new()
     {
         ["TUR"] = "Turkey",
         ["MKD"] = "NMK",
-        ["BIH"] = "Bosnia"
+        ["BIH"] = "Bosnia",
+        ["GEO"] = "Georgia",
+        ["MNE"] = "Montenegro",
+    };
+
+    private static readonly string[] CountriesToSearch =
+    {
+        "AL",
+        "BA",
+        "ME",
+        "GE",
+        "MK",
+        "TR",
     };
 
     public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
@@ -96,7 +108,7 @@ internal class ItraParser : IParser
         return parsed.ToString("dd.MM.yyyy");
     }
 
-    static async Task<string> GetDataAsync()
+    private static async Task<string> GetDataAsync()
     {
         var handler = new HttpClientHandler
         {
@@ -116,11 +128,10 @@ internal class ItraParser : IParser
                 @"<input name=""__RequestVerificationToken"" type=""hidden"" value=""([^""]+)""")
             .Groups[1].Value;
 
-        //Console.WriteLine("Token: " + token);
+        var dateStart = Settings.FilterDateFrom > DateTime.Today ? Settings.FilterDateFrom : DateTime.Today;
+        var body = $"Input.SearchTerms=&{string.Join('&', CountriesToSearch.Select(c => $"Input.Country={c}"))}&Input.DateStart={dateStart:dd-MM-yyyy}&__RequestVerificationToken={WebUtility.UrlEncode(token)}";
 
-        // STEP 3 — Build POST body
-        var body = $"Input.SearchTerms=&Input.Country=AL&Input.Country=BA&Input.Country=ME&Input.Country=MK&Input.Country=TR&Input.DateStart=01-01-2026&__RequestVerificationToken={WebUtility.UrlEncode(token)}";
-        //var body = $"Input.SearchTerms=&Input.Country=MK&Input.DateStart=01-01-2026&__RequestVerificationToken={WebUtility.UrlEncode(token)}";
+        Console.WriteLine(body);
 
         var content = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded");
 
@@ -149,6 +160,7 @@ internal class ItraParser : IParser
         var regex = new Regex("\"(<div[\\s\\S]*?</div>)\"", RegexOptions.Multiline);
         var matches = regex.Matches(fullScriptContent);
 
+        Console.WriteLine($"Found {matches.Count} events.");
         foreach (Match m in matches)
         {
             string html = m.Groups[1].Value.Replace("\\\"", "\"");

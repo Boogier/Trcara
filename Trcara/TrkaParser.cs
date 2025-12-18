@@ -25,6 +25,8 @@ namespace Trcara
                 return [];
             }
 
+            Console.WriteLine($"Found {eventNodes.Count} events.");
+
             var events = new List<EventDetails>();
 
             foreach (var card in eventNodes)
