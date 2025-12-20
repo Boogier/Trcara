@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using System.Text;
 using Trcara;
 
 Console.OutputEncoding = Encoding.UTF8;
 
+Console.WriteLine($"Trčara version {Assembly.GetExecutingAssembly().GetName().Version}");
 Console.WriteLine($"Filtering races starting from {Settings.FilterDateFrom:dd.MM.yyyy}.");
 
 var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
