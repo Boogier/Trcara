@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using HtmlAgilityPack;
 
-namespace Trcara;
+namespace Trcara.Parsers;
 
 internal class RunTraceParser : IParser
 {

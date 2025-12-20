@@ -1,4 +1,6 @@
-﻿namespace Trcara;
+﻿using Trcara.Parsers;
+
+namespace Trcara;
 
 internal class ParserProvider
 {

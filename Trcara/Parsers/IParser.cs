@@ -1,4 +1,4 @@
-﻿namespace Trcara;
+﻿namespace Trcara.Parsers;
 
 internal interface IParser
 {

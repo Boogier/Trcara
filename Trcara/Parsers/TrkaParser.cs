@@ -1,16 +1,29 @@
 ﻿using HtmlAgilityPack;
+using System.Net;
+using System.Web;
 
-namespace Trcara;
+namespace Trcara.Parsers;
 
 internal class TrkaParser : IParser
 {
     public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
     {
-        var baseUrl = "https://www.trka.rs";
-
+        var baseUrl = new Uri("https://www.trka.rs");
         Console.WriteLine($"Parsing {baseUrl}");
 
-        var httpClient = new HttpClient();
+        var handler = new HttpClientHandler
+        {
+            CookieContainer = new CookieContainer(),
+            AutomaticDecompression = DecompressionMethods.All
+        };
+        handler.CookieContainer.Add(new Cookie
+        {
+            Name = "django_language",
+            Value = "sr-RS",
+            Domain = baseUrl.Host
+        });
+
+        var httpClient = new HttpClient(handler);
         var html = await httpClient.GetStringAsync(baseUrl);
 
         var doc = new HtmlDocument();
@@ -31,7 +44,7 @@ internal class TrkaParser : IParser
 
         foreach (var card in eventNodes)
         {
-            var titleNode = card.SelectSingleNode(".//h5[@class='card-title']");
+            var titleNode = card.SelectSingleNode(".//h5[contains(@class, 'card-title')]");
             var title = titleNode?.InnerText?.Trim() ?? "";
 
             if (knownRaces.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
@@ -39,7 +52,7 @@ internal class TrkaParser : IParser
                 continue;
             }
 
-            var dateNode = card.SelectSingleNode(".//p[@class='card-text']/small[contains(@class, 'text-body-secondary')]");
+            var dateNode = card.SelectSingleNode(".//p[contains(@class, 'card-text')]/small[contains(@class, 'text-body-secondary')]");
             var linkNode = card.SelectSingleNode(".//a[@href]");
 
             var date = dateNode?.InnerText?.Trim() ?? "";
@@ -48,7 +61,7 @@ internal class TrkaParser : IParser
             (string Deadline, string Contact, string MoreDetailsLink) details = new();
             if (!string.IsNullOrEmpty(trkaLink) && !trkaLink.StartsWith("http"))
             {
-                trkaLink = new Uri(new Uri(baseUrl), trkaLink).ToString();
+                trkaLink = new Uri(baseUrl, trkaLink).ToString();
                 details = ParseEventDetails(await httpClient.GetStringAsync(trkaLink));
             }
 
@@ -72,66 +85,52 @@ internal class TrkaParser : IParser
     /// - "Више детаља" (as a link)
     /// Returns (Deadline, Contact, MoreDetailsLink)
     /// </summary>
-    public static (string Deadline, string Contact, string MoreDetailsLink) ParseEventDetails(string html)
+    public static (string? Deadline, string? Contact, string? MoreDetailsLink) ParseEventDetails(string html)
     {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
-        string GetFieldValue(string labelText)
-        {
-            var labelNode = doc.DocumentNode
-                .SelectSingleNode($"//label[normalize-space(text())='{labelText}']");
-
-            if (labelNode == null)
-            {
-                return string.Empty;
-            }
-
-            // Get the sibling <p> or <div> that holds the value
-            //var valueNode = labelNode
-            //    .ParentNode?
-            //    .ParentNode?
-            //    .SelectSingleNode(".//p|.//div");
-            //var valueNode2 = labelNode
-            //    .ParentNode?
-            //    .ParentNode?
-            //    .SelectSingleNode(".//div|.//div");
-
-            //if (valueNode == null)
-            //    return string.Empty;
-
-            //// Prefer link text if present
-            //var linkNode = valueNode.SelectSingleNode(".//a");
-            //if (linkNode != null)
-            //    return linkNode.GetAttributeValue("href", "").Trim();
-
-
-            var parentNode = labelNode
-                .ParentNode?
-                .ParentNode;
-            var link = parentNode.SelectSingleNode(".//a");
-
-            if (link != null)
-            {
-                return link.GetAttributeValue("href", "").Trim();
-            }
-
-            var sibling = labelNode
-                .ParentNode.NextSibling;
-
-            //var valueNode = labelNode
-            //    .ParentNode?
-            //    .ParentNode?
-            //    .SelectSingleNode(".//p|.//div");
-            var valueNode = labelNode.ParentNode.NextSibling.NextSibling;
-
-            return valueNode.InnerText.Trim();
-        }
-
-        var deadline = GetFieldValue("Крајњи рок за пријаву:");
-        var contact = GetFieldValue("Контакт:");
-        var moreDetails = GetFieldValue("Више детаља:");
+        var deadline = GetFieldValue("Крајњи рок за пријаву:") ?? GetFieldValue("Registrations deadline:");
+        var contact = GetFieldValue("Контакт:") ?? GetFieldValue("Contact:");
+        var moreDetails = GetFieldValue("Више детаља:") ?? GetFieldValue("More details:");
 
         return (deadline, contact, moreDetails);
+
+        string? GetFieldValue(string labelText)
+        {
+            string? result = null;
+            try
+            {
+                var labelNode = doc.DocumentNode
+                    .SelectSingleNode($"//label[normalize-space(text())='{labelText}']");
+
+                if (labelNode == null) // can be null
+                {
+                    return null;
+                }
+
+                var parentNode = labelNode
+                    .ParentNode
+                    .ParentNode;
+                var link = parentNode.SelectSingleNode(".//a");
+
+                if (link != null) // can be null
+                {
+                    result = link.GetAttributeValue("href", "").Trim();
+                }
+                else
+                {
+                    var valueNode = labelNode.ParentNode.NextSibling.NextSibling;
+
+                    result = valueNode.InnerText.Trim();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error parsing event details: {e.Message}");
+            }
+
+            return string.IsNullOrWhiteSpace(result) ? null : result;
+        }
     }
 }

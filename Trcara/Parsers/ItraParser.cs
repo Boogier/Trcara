@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 
-namespace Trcara;
+namespace Trcara.Parsers;
 
 internal class ItraParser : IParser
 {
