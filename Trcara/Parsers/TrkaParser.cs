@@ -45,7 +45,7 @@ internal class TrkaParser : IParser
         foreach (var card in eventNodes)
         {
             var titleNode = card.SelectSingleNode(".//h5[contains(@class, 'card-title')]");
-            var title = titleNode?.InnerText?.Trim() ?? "";
+            var title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim() ?? "");
 
             if (knownRaces.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
             {

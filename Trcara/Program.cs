@@ -43,7 +43,7 @@ if (events.Count > 0)
             var date = e.Date.TrimEnd('.');
             var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
-            writer.WriteLine($"\"{eventType}\"\t\"{e.Title}\"\t\"{e.Distance}\"\t\"{e.Elevation}\"\t\"{date}\"\t\"{e.Deadline}\"\t\"{linkCleared}\"\t\"{e.Facebook}\"\t\"{e.Instagram}\"\t\"{e.Contact}\"\t\"{e.Country}\"\t\"{e.Location}\"");
+            writer.WriteLine($"{eventType}\t{e.Title}\t{e.Distance}\t{e.Elevation}\t{date}\t{e.Deadline}\t{linkCleared}\t{e.Facebook}\t{e.Instagram}\t{e.Contact}\t{e.Country}\t{e.Location}");
         }
     }
 
