@@ -5,7 +5,7 @@ namespace Trcara.Parsers;
 
 internal class RunTraceParser : IParser
 {
-    public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
+    public async Task<List<EventDetails>> GetEventsAsync(KnownRace[] knownRaces)
     {
         var baseUrl = "https://runtrace.net";
 
@@ -37,7 +37,7 @@ internal class RunTraceParser : IParser
             }
 
             var title = infoNode.SelectSingleNode(".//a[contains(@class, 'race-title')]")?.InnerText?.Trim();
-            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => string.Equals(kr.Name, title, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }

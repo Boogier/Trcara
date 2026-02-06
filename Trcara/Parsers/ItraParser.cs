@@ -29,7 +29,7 @@ internal class ItraParser : IParser
         "TR"
     };
 
-    public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
+    public async Task<List<EventDetails>> GetEventsAsync(KnownRace[] knownRaces)
     {
         Console.WriteLine($"Parsing {BaseUrl}");
 
@@ -153,7 +153,7 @@ internal class ItraParser : IParser
     }
 
 
-    private static List<EventInfo> ParseHtml(string fullScriptContent, string[] knownRuns)
+    private static List<EventInfo> ParseHtml(string fullScriptContent, KnownRace[] knownRaces)
     {
         var events = new List<EventInfo>();
 
@@ -166,7 +166,7 @@ internal class ItraParser : IParser
         {
             var html = m.Groups[1].Value.Replace("\\\"", "\"");
             var e = ParseOneEvent(html);
-            if (!knownRuns.Any(kr => string.Equals(kr, e.Name)))
+            if (!knownRaces.Any(kr => string.Equals(kr.Name, e.Name)))
             {
                 events.Add(e);
             }

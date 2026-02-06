@@ -1,12 +1,11 @@
 ﻿using HtmlAgilityPack;
 using System.Net;
-using System.Web;
 
 namespace Trcara.Parsers;
 
 internal class TrkaParser : IParser
 {
-    public async Task<List<EventDetails>> GetEventsAsync(string[] knownRaces)
+    public async Task<List<EventDetails>> GetEventsAsync(KnownRace[] knownRaces)
     {
         var baseUrl = new Uri("https://www.trka.rs");
         Console.WriteLine($"Parsing {baseUrl}");
@@ -47,7 +46,7 @@ internal class TrkaParser : IParser
             var titleNode = card.SelectSingleNode(".//h5[contains(@class, 'card-title')]");
             var title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim() ?? "");
 
-            if (knownRaces.Any(kr => string.Equals(kr, title, StringComparison.OrdinalIgnoreCase)))
+            if (knownRaces.Any(kr => string.Equals(kr.Name, title, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }

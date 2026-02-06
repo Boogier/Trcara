@@ -8,7 +8,7 @@ Console.OutputEncoding = Encoding.UTF8;
 Console.WriteLine($"Trčara version {Assembly.GetExecutingAssembly().GetName().Version}");
 Console.WriteLine($"Filtering races starting from {Settings.FilterDateFrom:dd.MM.yyyy}.");
 
-var knownRaces = await KnownRacesProvider.GetKnownRunsAsync();
+var knownRaces = await KnownRacesProvider.GetKnownRacesAsync();
 
 var events = new List<EventDetails>();
 var parsers = ParserProvider.GetParsers();
