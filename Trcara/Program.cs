@@ -48,7 +48,9 @@ if (events.Count > 0)
     }
 
     Console.WriteLine(@$"
-Extracted {events.Count} events to file {filePath}.
+Extracted {events.Count} events to file {filePath}.");
+    EnumerateFoundEvents(events, knownRaces);
+    Console.WriteLine(@"
 
 Now you can open it with notepad and copy/paste the events to Trcara spreadsheet.
 Then select 'Дата' column and format it as Date. 
@@ -65,7 +67,24 @@ Press any key to exit.");
 
 Console.ReadKey();
 
-string GetEventType(string title)
+static void EnumerateFoundEvents(List<EventDetails> events, KnownRace[] knownRaces)
+{
+    foreach (var ev in events.OrderBy(e => Utils.ParseDate(e.Date)))
+    {
+        Console.WriteLine($"    {ev.Date} {ev.Title}");
+        var similarRaces = FindSimilarRaces(ev, knownRaces);
+        if (similarRaces.Count > 0)
+        {
+            Log.Warning("      Similar races found, check maybe they already exist in the list:");
+            foreach (var knownRace in similarRaces)
+            {
+                Log.Warning($"          {knownRace.Date:dd.MM.yyyy} {knownRace.Name}");
+            }
+        }
+    }
+}
+
+static string GetEventType(string title)
 {
     if (
         title.Has("trail")
@@ -94,4 +113,27 @@ string GetEventType(string title)
     }
 
     return RaceType.Other;
+}
+
+static List<KnownRace> FindSimilarRaces(EventDetails ev, KnownRace[] knownRaces)
+{
+    var eventNameWords = ExtractWords(ev.Title);
+
+    return knownRaces
+        .Where(kr => ExtractWords(kr.Name).Any(word => eventNameWords.Contains(word)))
+        .ToList();
+
+    //var parsedDate = Utils.ParseDate(ev.Date);
+    //return knownRaces1.Where(kr => Math.Abs(kr.Date.Subtract((DateTime)parsedDate).TotalDays) <= 3);
+}
+
+static List<string> ExtractWords(string s)
+{
+    return s
+        .Split(' ', ',', '.', '-', '&')
+        .Select(s => s.Trim(' ', '"', '\'').ToLower())
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Where(s => !int.TryParse(s, out _))
+        .Where(s => s is not ("kolo" or "vtl" or "втл" or "trail" or "ttls" or "ultra" or "maraton" or "marathon" or "race" or "run" or "challenge" or "ocr"))
+        .ToList();
 }

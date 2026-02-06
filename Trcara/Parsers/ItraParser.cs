@@ -132,7 +132,7 @@ internal class ItraParser : IParser
         var dateStart = Settings.FilterDateFrom > DateTime.Today ? Settings.FilterDateFrom : DateTime.Today;
         var body = $"Input.SearchTerms=&{string.Join('&', CountriesToSearch.Select(c => $"Input.Country={c}"))}&Input.DateStart={dateStart:dd-MM-yyyy}&__RequestVerificationToken={WebUtility.UrlEncode(token)}";
 
-        Console.WriteLine(body);
+        //Console.WriteLine(body);
 
         var content = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded");
 

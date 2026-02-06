@@ -1,12 +1,9 @@
-﻿using System.Globalization;
-
-namespace Trcara;
+﻿namespace Trcara;
 
 internal static class KnownRacesProvider
 {
     private const string TrcaraColumnBExport = "https://docs.google.com/spreadsheets/d/1o3LivaIhBS0M1_bG9H8Pq_9K57AVFo0H40h0MzCOICs/gviz/tq?tqx=out:csv&tq=select%20B,E";
     // https://chatgpt.com/share/6956818c-713c-8005-ae06-2c265e11737a
-    private static readonly DateTime EmptyDate = DateTime.MinValue;
     
     public static async Task<KnownRace[]> GetKnownRacesAsync()
     {
@@ -20,8 +17,8 @@ internal static class KnownRacesProvider
             var knownRaces = csv.Split('\n')
                 .Skip(1) // Table header
                 .Select(line => line.Split(","))
-                .Select(arr => new KnownRace(CleanupName(arr[0]), CleanupDate(arr[1])))
-                .Where(race => !string.IsNullOrWhiteSpace(race.Name) && race.Date != EmptyDate)
+                .Select(arr => new KnownRace(CleanupName(arr[0]), Utils.ParseDate(arr[1])))
+                .Where(race => !string.IsNullOrWhiteSpace(race.Name) && race.Date != Utils.EmptyDate)
                 .ToArray();
 
             Console.WriteLine($"\n{knownRaces.Length} races are known. Starting from '{knownRaces.FirstOrDefault()}' to '{knownRaces.LastOrDefault()}'\n");
@@ -35,17 +32,6 @@ internal static class KnownRacesProvider
         }
 
         return [];
-    }
-
-    private static DateTime CleanupDate(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-        {
-            return EmptyDate;
-        }
-
-        s = s.Trim(' ', '"');
-        return DateTime.TryParse(s, CultureInfo.GetCultureInfo("ru-RU"), out var d) ? d : EmptyDate;
     }
 
     private static string CleanupName(string s)
