@@ -37,7 +37,7 @@ internal class RunTraceParser : IParser
             }
 
             var title = infoNode.SelectSingleNode(".//a[contains(@class, 'race-title')]")?.InnerText?.Trim();
-            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => string.Equals(kr.Name, title, StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => kr.IsEqual(title)))
             {
                 continue;
             }
@@ -52,8 +52,9 @@ internal class RunTraceParser : IParser
 
             races.Add(new EventDetails
             {
+                Source = Source.RunTrace,
                 Title = title,
-                Date = GetDate(date),
+                DateString = GetDate(date),
                 Country = "Serbia",
                 Location = location,
                 Link = !string.IsNullOrWhiteSpace(slug) ? new Uri(new Uri(baseUrl), $"?event={slug}").ToString()

@@ -39,8 +39,9 @@ internal class ItraParser : IParser
 
         return events.Select(e => new EventDetails
         {
+            Source = Source.Itra,
             Title = e.Name,
-            Date = GetDate(e.Date),
+            DateString = GetDate(e.Date),
             Location = GetLocation(e.Location),
             Country = GetCountry(e.Location),
             Type = RaceType.Trail,
@@ -166,7 +167,7 @@ internal class ItraParser : IParser
         {
             var html = m.Groups[1].Value.Replace("\\\"", "\"");
             var e = ParseOneEvent(html);
-            if (!knownRaces.Any(kr => string.Equals(kr.Name, e.Name)))
+            if (!knownRaces.Any(kr => kr.IsEqual(e.Name)))
             {
                 events.Add(e);
             }

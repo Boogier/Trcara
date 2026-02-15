@@ -1,14 +1,20 @@
-﻿internal readonly record struct EventDetails(
+﻿namespace Trcara;
+
+internal readonly record struct EventDetails(
     string Type,
     string Title,
     string? Distance,
     string? Elevation,
-    string Date,
+    string DateString,
     string Link,
     string Facebook,
     string Instagram,
     string? Deadline,
     string? Contact,
     string Country,
-    string Location
-    );
+    string Location,
+    Source Source
+)
+{
+    public DateTime Date => Utils.ParseDate(DateString);
+}

@@ -46,7 +46,7 @@ internal class TrkaParser : IParser
             var titleNode = card.SelectSingleNode(".//h5[contains(@class, 'card-title')]");
             var title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim() ?? "");
 
-            if (knownRaces.Any(kr => string.Equals(kr.Name, title, StringComparison.OrdinalIgnoreCase)))
+            if (knownRaces.Any(kr => kr.IsEqual(title)))
             {
                 continue;
             }
@@ -71,7 +71,7 @@ internal class TrkaParser : IParser
                 ? details.MoreDetailsLink
                 : trkaLink;
 
-            events.Add(new EventDetails("", title, "", "", date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", ""));
+            events.Add(new EventDetails("", title, "", "", date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", "", Source.TrkaRs));
         }
 
         return events;

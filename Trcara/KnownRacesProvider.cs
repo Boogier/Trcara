@@ -46,5 +46,3 @@ internal static class KnownRacesProvider
         return s;
     }
 }
-
-internal readonly record struct KnownRace(string Name, DateTime Date);

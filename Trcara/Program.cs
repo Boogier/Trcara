@@ -19,7 +19,7 @@ foreach (var parser in parsers)
         var parsedEvents = await parser.GetEventsAsync(knownRaces);
         var filteredEvents = parsedEvents
             .Where(e =>
-                !DateTime.TryParse(e.Date, CultureInfo.GetCultureInfo("ru-RU"), out var date)
+                !DateTime.TryParse(e.DateString, CultureInfo.GetCultureInfo("ru-RU"), out var date)
                 || date >= Settings.FilterDateFrom)
             .ToList();
 
@@ -40,7 +40,7 @@ if (events.Count > 0)
         foreach (var e in events)
         {
             var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
-            var date = e.Date.TrimEnd('.');
+            var date = e.DateString.TrimEnd('.');
             var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
             writer.WriteLine($"{eventType}\t{e.Title}\t{e.Distance}\t{e.Elevation}\t{date}\t{e.Deadline}\t{linkCleared}\t{e.Facebook}\t{e.Instagram}\t{e.Contact}\t{e.Country}\t{e.Location}");
@@ -69,16 +69,17 @@ Console.ReadKey();
 
 static void EnumerateFoundEvents(List<EventDetails> events, KnownRace[] knownRaces)
 {
-    foreach (var ev in events.OrderBy(e => Utils.ParseDate(e.Date)))
+    foreach (var ev in events.OrderBy(e => Utils.ParseDate(e.DateString)))
     {
-        Console.WriteLine($"    {ev.Date} {ev.Title}");
-        var similarRaces = FindSimilarRaces(ev, knownRaces);
+        Console.WriteLine($"    {ev.Date:dd.MM.yyyy} {ev.Title}       : {ev.Source}");
+        var similarRaces = SimilarRacesDetector.FindSimilarRaces(ev, knownRaces);
         if (similarRaces.Count > 0)
         {
             Log.Warning("      Similar races found, check maybe they already exist in the list:");
             foreach (var knownRace in similarRaces)
             {
-                Log.Warning($"          {knownRace.Date:dd.MM.yyyy} {knownRace.Name}");
+                var color = Math.Abs((knownRace.Date - ev.Date).TotalDays) <= 3 ? Log.ErrorBackgroundColor : ConsoleColor.Yellow;
+                Log.ColorLine($"          {knownRace.Date:dd.MM.yyyy} {knownRace.Name}", foregroundColor: color);
             }
         }
     }
@@ -113,27 +114,4 @@ static string GetEventType(string title)
     }
 
     return RaceType.Other;
-}
-
-static List<KnownRace> FindSimilarRaces(EventDetails ev, KnownRace[] knownRaces)
-{
-    var eventNameWords = ExtractWords(ev.Title);
-
-    return knownRaces
-        .Where(kr => ExtractWords(kr.Name).Any(word => eventNameWords.Contains(word)))
-        .ToList();
-
-    //var parsedDate = Utils.ParseDate(ev.Date);
-    //return knownRaces1.Where(kr => Math.Abs(kr.Date.Subtract((DateTime)parsedDate).TotalDays) <= 3);
-}
-
-static List<string> ExtractWords(string s)
-{
-    return s
-        .Split(' ', ',', '.', '-', '&')
-        .Select(s => s.Trim(' ', '"', '\'').ToLower())
-        .Where(s => !string.IsNullOrWhiteSpace(s))
-        .Where(s => !int.TryParse(s, out _))
-        .Where(s => s is not ("kolo" or "vtl" or "втл" or "trail" or "ttls" or "ultra" or "maraton" or "marathon" or "race" or "run" or "challenge" or "ocr"))
-        .ToList();
 }
