@@ -41,7 +41,7 @@ internal class ItraParser : IParser
         {
             Source = Source.Itra,
             Title = e.Name,
-            DateString = GetDate(e.Date),
+            DateString = GetDate(e.DateString),
             Location = GetLocation(e.Location),
             Country = GetCountry(e.Location),
             Type = RaceType.Trail,
@@ -167,7 +167,7 @@ internal class ItraParser : IParser
         {
             var html = m.Groups[1].Value.Replace("\\\"", "\"");
             var e = ParseOneEvent(html);
-            if (!knownRaces.Any(kr => kr.IsEqual(e.Name)))
+            if (!knownRaces.Any(kr => kr.IsEqual(e.Name, e.Date)))
             {
                 events.Add(e);
             }
@@ -196,7 +196,7 @@ internal class ItraParser : IParser
             ?.Trim();
 
         // Date (full text inside date div)
-        e.Date = doc.DocumentNode
+        e.DateString = doc.DocumentNode
             .SelectSingleNode("//div[@class='date']")
             ?.InnerText
             ?.Trim()
@@ -232,13 +232,15 @@ internal class ItraParser : IParser
     }
 }
 
-public class EventInfo
+public record EventInfo
 {
-    public string Name { get; set; }
-    public string Date { get; set; }
-    public string Link { get; set; }
-    public string Location { get; set; }
+    public string Name { get; set; } = "";
+    public string DateString { get; set; } = "";
+    public string Link { get; set; } = "";
+    public string Location { get; set; } = "";
     public List<RaceInfo> Races { get; set; } = new();
+
+    public DateTime Date => Utils.ParseDate(DateString);
 }
 
 public class RaceInfo

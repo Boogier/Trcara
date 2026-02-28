@@ -45,16 +45,16 @@ internal class TrkaParser : IParser
         {
             var titleNode = card.SelectSingleNode(".//h5[contains(@class, 'card-title')]");
             var title = WebUtility.HtmlDecode(titleNode?.InnerText?.Trim() ?? "");
+            var dateNode = card.SelectSingleNode(".//p[contains(@class, 'card-text')]/small[contains(@class, 'text-body-secondary')]");
+            var date = dateNode?.InnerText?.Trim() ?? "";
 
-            if (knownRaces.Any(kr => kr.IsEqual(title)))
+            if (knownRaces.Any(kr => kr.IsEqual(title, Utils.ParseDate(date))))
             {
                 continue;
             }
 
-            var dateNode = card.SelectSingleNode(".//p[contains(@class, 'card-text')]/small[contains(@class, 'text-body-secondary')]");
             var linkNode = card.SelectSingleNode(".//a[@href]");
 
-            var date = dateNode?.InnerText?.Trim() ?? "";
             var trkaLink = linkNode?.GetAttributeValue("href", "") ?? "";
 
             (string Deadline, string Contact, string MoreDetailsLink) details = new();

@@ -37,12 +37,12 @@ internal class RunTraceParser : IParser
             }
 
             var title = infoNode.SelectSingleNode(".//a[contains(@class, 'race-title')]")?.InnerText?.Trim();
-            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => kr.IsEqual(title)))
+            var date = infoNode.SelectSingleNode(".//div[contains(@class, 'race-date')]")?.InnerText?.Trim();
+            if (string.IsNullOrWhiteSpace(title) || knownRaces.Any(kr => kr.IsEqual(title, Utils.ParseDate(date))))
             {
                 continue;
             }
 
-            var date = infoNode.SelectSingleNode(".//div[contains(@class, 'race-date')]")?.InnerText?.Trim();
             var location = infoNode.SelectSingleNode(".//div[contains(@class, 'race-location')]/span")?.InnerText?.Trim();
 
             // Find sign-up link (if exists)

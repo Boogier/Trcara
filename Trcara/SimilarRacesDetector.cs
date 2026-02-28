@@ -21,16 +21,18 @@ internal static class SimilarRacesDetector
         , "ocr"
         , "trka"
         , "skyrace"
-        , "na"
         , "ultramaraton"
+        , "na"
+        , "to"
     ];
 
     public static List<KnownRace> FindSimilarRaces(EventDetails ev, KnownRace[] knownRaces)
     {
-        var eventNameWords = ExtractWords(ev.Title);
+        var title = Utils.RemoveDiacritics(ev.Title);
+        var eventNameWords = ExtractWords(title);
 
         return knownRaces
-            .Where(kr => ExtractWords(kr.Name).Any(word => eventNameWords.Contains(word)))
+            .Where(kr => ExtractWords(Utils.RemoveDiacritics(kr.Name)).Any(word => eventNameWords.Contains(word)))
             .ToList();
 
         //var parsedDate = Utils.ParseDate(ev.Date);
