@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using System.Net;
+using System.Text;
 
 namespace Trcara.Parsers;
 
@@ -90,10 +91,47 @@ internal class TrkaParser : IParser
         doc.LoadHtml(html);
 
         var deadline = GetFieldValue("Крајњи рок за пријаву:") ?? GetFieldValue("Registrations deadline:");
-        var contact = GetFieldValue("Контакт:") ?? GetFieldValue("Contact:");
+        var contact = GetContact();
         var moreDetails = GetFieldValue("Више детаља:") ?? GetFieldValue("More details:");
 
         return (deadline, contact, moreDetails);
+
+        // -- 
+
+        string GetContact()
+        {
+            // Find all spans with class="__cf_email__"
+            var nodes = doc.DocumentNode.SelectNodes("//span[contains(@class,'__cf_email__')]");
+
+            if (nodes == null)
+                return "";
+
+            foreach (var node in nodes)
+            {
+                var encoded = node.GetAttributeValue("data-cfemail", "");
+                if (!string.IsNullOrWhiteSpace(encoded))
+                {
+                    return $"mailto:{DecodeCfEmail(encoded)}";
+                }
+            }
+
+            return "";
+        }
+
+        static string DecodeCfEmail(string cfEmail)
+        {
+            var key = Convert.ToInt32(cfEmail.Substring(0, 2), 16);
+            var sb = new StringBuilder();
+
+            for (var i = 2; i < cfEmail.Length; i += 2)
+            {
+                var hex = Convert.ToInt32(cfEmail.Substring(i, 2), 16);
+                var decodedChar = (char)(hex ^ key);
+                sb.Append(decodedChar);
+            }
+
+            return sb.ToString();
+        }
 
         string? GetFieldValue(string labelText)
         {
