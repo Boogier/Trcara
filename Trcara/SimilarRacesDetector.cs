@@ -24,6 +24,10 @@ internal static class SimilarRacesDetector
         , "ultramaraton"
         , "na"
         , "to"
+        , "liga"
+        , "i"
+        , "de"
+        , "za"
     ];
 
     public static List<KnownRace> FindSimilarRaces(EventDetails ev, KnownRace[] knownRaces)
