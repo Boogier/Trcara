@@ -1,15 +1,17 @@
-﻿using HtmlAgilityPack;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http;
 using System.Text;
+using HtmlAgilityPack;
 
 namespace Trcara.Parsers;
 
 internal class TrkaParser : IParser
 {
+    private static readonly Uri BaseUrl = new("https://www.trka.rs");
+
     public async Task<List<EventDetails>> GetEventsAsync(KnownRace[] knownRaces)
     {
-        var baseUrl = new Uri("https://www.trka.rs");
-        Console.WriteLine($"Parsing {baseUrl}");
+        Console.WriteLine($"Parsing {BaseUrl}");
 
         var handler = new HttpClientHandler
         {
@@ -20,11 +22,11 @@ internal class TrkaParser : IParser
         {
             Name = "django_language",
             Value = "sr-RS",
-            Domain = baseUrl.Host
+            Domain = BaseUrl.Host
         });
 
         var httpClient = new HttpClient(handler);
-        var html = await httpClient.GetStringAsync(baseUrl);
+        var html = await httpClient.GetStringAsync(BaseUrl);
 
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
@@ -58,13 +60,7 @@ internal class TrkaParser : IParser
 
             var trkaLink = linkNode?.GetAttributeValue("href", "") ?? "";
 
-            (string Deadline, string Contact, string MoreDetailsLink) details = new();
-            if (!string.IsNullOrEmpty(trkaLink) && !trkaLink.StartsWith("http"))
-            {
-                trkaLink = new Uri(baseUrl, trkaLink).ToString();
-                details = ParseEventDetails(await httpClient.GetStringAsync(trkaLink));
-            }
-
+            var details = await ParseEventDetails(httpClient, trkaLink).ConfigureAwait(false);
             var facebook = details.MoreDetailsLink.Has("facebook") ? details.MoreDetailsLink : "";
             var instagram = details.MoreDetailsLink.Has("instagram") ? details.MoreDetailsLink : "";
 
@@ -72,7 +68,20 @@ internal class TrkaParser : IParser
                 ? details.MoreDetailsLink
                 : trkaLink;
 
-            events.Add(new EventDetails("", title, "", "", date, link, facebook, instagram, details.Deadline, details.Contact, "Serbia", "", Source.TrkaRs));
+            events.Add(new EventDetails(
+                "", 
+                title, 
+                "", 
+                "", 
+                date, 
+                link, 
+                facebook, 
+                instagram, 
+                details.Deadline, 
+                details.Contact, 
+                "Serbia", 
+                details.Location, 
+                Source.TrkaRs));
         }
 
         return events;
@@ -85,16 +94,25 @@ internal class TrkaParser : IParser
     /// - "Више детаља" (as a link)
     /// Returns (Deadline, Contact, MoreDetailsLink)
     /// </summary>
-    public static (string? Deadline, string? Contact, string? MoreDetailsLink) ParseEventDetails(string html)
+    private static async Task<(string? Deadline, string? Contact, string? MoreDetailsLink, string Location)> ParseEventDetails(HttpClient httpClient, string trkaLink)
     {
+        if (string.IsNullOrEmpty(trkaLink) || trkaLink.StartsWith("http"))
+        {
+            return new();
+        }
+
+        trkaLink = new Uri(BaseUrl, trkaLink).ToString();
+        var html = await httpClient.GetStringAsync(trkaLink).ConfigureAwait(false);
+
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
         var deadline = GetFieldValue("Крајњи рок за пријаву:") ?? GetFieldValue("Registrations deadline:");
         var contact = GetContact();
         var moreDetails = GetFieldValue("Више детаља:") ?? GetFieldValue("More details:");
+        var location = GetFieldValue("Локација:") ?? GetFieldValue("Location:");
 
-        return (deadline, contact, moreDetails);
+        return (deadline, contact, moreDetails, location);
 
         // -- 
 
