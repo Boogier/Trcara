@@ -40,10 +40,9 @@ if (events.Count > 0)
         foreach (var e in events)
         {
             var eventType = string.IsNullOrWhiteSpace(e.Type) ? GetEventType(e.Title) : e.Type;
-            var date = e.DateString.TrimEnd('.');
             var linkCleared = string.IsNullOrWhiteSpace(e.Link) ? "" : Uri.EscapeUriString(e.Link);
 
-            writer.WriteLine($"{eventType}\t{e.Title}\t{e.Distance}\t{e.Elevation}\t{date}\t{e.Deadline}\t{linkCleared}\t{e.Facebook}\t{e.Instagram}\t{e.Contact}\t{e.Country}\t{e.Location}");
+            writer.WriteLine($"{eventType}\t{e.Title}\t{e.Distance}\t{e.Elevation}\t{e.Date:dd.MM.yyyy}\t{e.Deadline}\t{linkCleared}\t{e.Facebook}\t{e.Instagram}\t{e.Contact}\t{e.Country}\t{e.Location}");
         }
     }
 

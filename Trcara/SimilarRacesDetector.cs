@@ -28,12 +28,25 @@ internal static class SimilarRacesDetector
         , "i"
         , "de"
         , "za"
+        , "трка"
     ];
+
+    private static readonly char[] Separators = [' ', '-', '_', '.', ',', ';', ':', '!', '?', '(', ')', '[', ']', '{', '}', '"', '\'', '–'];
 
     public static List<KnownRace> FindSimilarRaces(EventDetails ev, KnownRace[] knownRaces)
     {
         var title = Utils.RemoveDiacritics(ev.Title);
         var eventNameWords = ExtractWords(title);
+
+        // this is to track the words that are matched in the known races
+
+        //foreach (var kr in knownRaces)
+        //{
+        //    foreach (var se in ExtractWords(Utils.RemoveDiacritics(kr.Name)).Where(word => eventNameWords.Contains(word)))
+        //    {
+        //        Console.WriteLine($"<{se}>");
+        //    }
+        //}
 
         return knownRaces
             .Where(kr => ExtractWords(Utils.RemoveDiacritics(kr.Name)).Any(word => eventNameWords.Contains(word)))
@@ -46,8 +59,8 @@ internal static class SimilarRacesDetector
     private static List<string> ExtractWords(string str)
     {
         return str
-            .Split(' ', ',', '.', '-', '&')
-            .Select(s => s.Trim(' ', '"', '\'').ToLower())
+            .Split(Separators)
+            .Select(s => s.ToLower())
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .Where(s => !int.TryParse(s, out _))
             .Where(s => !NoiceWords.Contains(s))

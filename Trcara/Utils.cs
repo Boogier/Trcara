@@ -14,7 +14,7 @@ internal static class Utils
             return EmptyDate;
         }
 
-        s = s.Trim(' ', '"');
+        s = s.Split("-")[0].Trim(' ', '"', '.');
         return DateTime.TryParse(s, CultureInfo.GetCultureInfo("ru-RU"), out var d) ? d : EmptyDate;
     }
 

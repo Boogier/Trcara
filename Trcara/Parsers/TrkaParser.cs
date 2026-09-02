@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http;
 using System.Text;
 using HtmlAgilityPack;
 
@@ -7,11 +6,11 @@ namespace Trcara.Parsers;
 
 internal class TrkaParser : IParser
 {
-    private static readonly Uri BaseUrl = new("https://www.trka.rs");
+    private static readonly Uri BaseUri = new("https://www.trka.rs");
 
     public async Task<List<EventDetails>> GetEventsAsync(KnownRace[] knownRaces)
     {
-        Console.WriteLine($"Parsing {BaseUrl}");
+        Console.WriteLine($"Parsing {BaseUri}");
 
         var handler = new HttpClientHandler
         {
@@ -22,11 +21,11 @@ internal class TrkaParser : IParser
         {
             Name = "django_language",
             Value = "sr-RS",
-            Domain = BaseUrl.Host
+            Domain = BaseUri.Host
         });
 
         var httpClient = new HttpClient(handler);
-        var html = await httpClient.GetStringAsync(BaseUrl);
+        var html = await httpClient.GetStringAsync(BaseUri);
 
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
@@ -58,7 +57,8 @@ internal class TrkaParser : IParser
 
             var linkNode = card.SelectSingleNode(".//a[@href]");
 
-            var trkaLink = linkNode?.GetAttributeValue("href", "") ?? "";
+            var trkaRelativeLink = linkNode?.GetAttributeValue("href", "") ?? "";
+            var trkaLink = new Uri(BaseUri, trkaRelativeLink).ToString();
 
             var details = await ParseEventDetails(httpClient, trkaLink).ConfigureAwait(false);
             var facebook = details.MoreDetailsLink.Has("facebook") ? details.MoreDetailsLink : "";
@@ -101,7 +101,7 @@ internal class TrkaParser : IParser
             return new();
         }
 
-        trkaLink = new Uri(BaseUrl, trkaLink).ToString();
+        trkaLink = new Uri(BaseUri, trkaLink).ToString();
         var html = await httpClient.GetStringAsync(trkaLink).ConfigureAwait(false);
 
         var doc = new HtmlDocument();
